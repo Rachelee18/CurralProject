@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Vaca {
+  id       Int      @id @default(autoincrement())
+  nome     String
+  idade    Int
+  raca     String
+  criado_em DateTime @db.Date
+  leites   Leite[]
+
+  @@map("Vaca")
+}
+
+model Curral {
+  id               Int       @id @default(autoincrement())
+  nome             String
+  localizacao      String
+  criado_em        DateTime  @default(now()) @db.Date
+  atualizado_em    DateTime  @default(now()) @db.Date
+  ordenhas_origem  Ordenha[] @relation("CurralOrigem")
+  ordenhas_destino Ordenha[] @relation("CurralDestino")
+
+  @@map("Curral")
+}
+
+model Ordenha {
+  id                Int      @id @default(autoincrement())
+  data              DateTime @db.Date
+  periodo_manha     String
+  periodo_tarde     String
+  criado_em         DateTime @default(now()) @db.Date
+  atualizado_em     DateTime @default(now()) @db.Date
+  curral_origem_id  Int
+  curral_destino_id Int
+  curral_origem     Curral   @relation("CurralOrigem", fields: [curral_origem_id], references: [id])
+  curral_destino    Curral   @relation("CurralDestino", fields: [curral_destino_id], references: [id])
+  leites            Leite[]
+
+  @@map("Ordenha")
+}
+
+model Leite {
+  id            Int      @id @default(autoincrement())
+  quantidade    Float
+  coleta_data   DateTime @db.Date
+  criado_em     DateTime @default(now()) @db.Date
+  atualizado_em DateTime @default(now()) @db.Date
+  vaca_id       Int
+  ordenha_id    Int
+  vaca          Vaca     @relation(fields: [vaca_id], references: [id])
+  ordenha       Ordenha  @relation(fields: [ordenha_id], references: [id])
+
+  @@map("Leite")
+}
